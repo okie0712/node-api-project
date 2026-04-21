@@ -3,20 +3,55 @@ const app = express();
 
 app.use(express.json());
 
-// Test route
+// Fake database
+let users = [
+  { id: 1, name: 'Brandon' },
+  { id: 2, name: 'User2' }
+];
+
+// Health check
 app.get('/', (req, res) => {
-  res.json({ message: 'API is running' });
+  res.json({ status: 'API running' });
 });
 
-// Users route
+// Get all users
 app.get('/users', (req, res) => {
-  res.json([
-    { id: 1, name: 'Brandon' },
-    { id: 2, name: 'User2' }
-  ]);
+  res.json(users);
 });
 
-// Login route (basic example)
+// Get single user
+app.get('/users/:id', (req, res) => {
+  const user = users.find(u => u.id == req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json(user);
+});
+
+// Create user
+app.post('/users', (req, res) => {
+  const newUser = {
+    id: users.length + 1,
+    name: req.body.name
+  };
+  users.push(newUser);
+  res.status(201).json(newUser);
+});
+
+// Update user
+app.put('/users/:id', (req, res) => {
+  const user = users.find(u => u.id == req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  user.name = req.body.name;
+  res.json(user);
+});
+
+// Delete user
+app.delete('/users/:id', (req, res) => {
+  users = users.filter(u => u.id != req.params.id);
+  res.json({ message: 'User deleted' });
+});
+
+// Login route
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
